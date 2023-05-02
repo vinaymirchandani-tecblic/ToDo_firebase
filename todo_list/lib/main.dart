@@ -20,7 +20,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: StreamBuilder(stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, usersnapshot){
+
+    //       By passing this Stream object to the StreamBuilder widget, the widget subscribes to the stream
+    //       and rebuilds its child widget whenever a new event is emitted by the stream. In this case, the
+    //       child widget is either a Home widget (if the user is signed in) or an AuthScreen widget
+    // (if the user is signed out).
+
+
+    builder: (context, usersnapshot){
         if(usersnapshot.hasData){
           return Home();
         } else{

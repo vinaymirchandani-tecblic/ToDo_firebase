@@ -41,6 +41,11 @@ class _AuthFormState extends State<AuthForm> {
       } else {
         userCredential = await auth.createUserWithEmailAndPassword(email: email, password: password);
         String? uid = userCredential.user?.uid;
+
+    //     Finally, the FirebaseFirestore instance is used to access the "users" collection and create a new
+    // document with the uid as its ID using the doc() method. The set() method is then used to add the username
+    // and email values to the document as key-value pairs in a JavaScript object. This creates a new document
+    // in the "users" collection for the new user, with their uid, username, and email stored within it.
         await FirebaseFirestore.instance.collection('users').doc(uid).set({'username':username,'email':email});
 
       }
@@ -79,6 +84,8 @@ class _AuthFormState extends State<AuthForm> {
                             borderRadius: BorderRadius.circular(5.0),
                             borderSide: BorderSide(color: Colors.grey),
                           ),
+                          border: OutlineInputBorder( borderRadius: BorderRadius.circular(5.0),
+                              borderSide: BorderSide(color: Colors.grey)),
                           labelText: "Username",
                           labelStyle: GoogleFonts.roboto(),
                         ),
@@ -107,6 +114,8 @@ class _AuthFormState extends State<AuthForm> {
                           borderRadius: BorderRadius.circular(5.0),
                           borderSide: BorderSide(color: Colors.grey),
                         ),
+                        border: OutlineInputBorder( borderRadius: BorderRadius.circular(5.0),
+                            borderSide: BorderSide(color: Colors.grey)),
                         labelText: "E-mail",
                         labelStyle: GoogleFonts.roboto(),
                       ),
