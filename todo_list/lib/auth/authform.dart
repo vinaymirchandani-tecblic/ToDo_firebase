@@ -36,7 +36,7 @@ class _AuthFormState extends State<AuthForm> {
 
     try {
       if (isLoginForm) {
-        userCredential = await auth.createUserWithEmailAndPassword(
+        userCredential = await auth.signInWithEmailAndPassword(
             email: email, password: password);
       } else {
         userCredential = await auth.createUserWithEmailAndPassword(email: email, password: password);

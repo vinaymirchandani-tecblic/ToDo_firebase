@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:todo_list/screens/description.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -32,6 +34,7 @@ class _HomeState extends State<Home> {
 
   var titleController = TextEditingController();
   var descriptionController = TextEditingController();
+  var clearController = TextEditingController();
 
   // addTaskOfFirebase() async {
   //   FirebaseAuth auth = FirebaseAuth.instance;
@@ -55,7 +58,7 @@ class _HomeState extends State<Home> {
     final User user = await auth.currentUser!;
     String uid = user.uid;
     var time = DateTime.now();
-    FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('tasks')
         .doc(uid)
         .collection('mytasks')
@@ -64,9 +67,11 @@ class _HomeState extends State<Home> {
       'title': titleController.text,
       'description': descriptionController.text,
       'time': time.toString(),
-      'timestamp': time
+      'timestamp': time,
     });
     Fluttertoast.showToast(msg: 'Data added');
+    titleController.text = '';
+    descriptionController.text ='';
   }
 
   _showFormDialog(BuildContext context) {
@@ -103,8 +108,9 @@ class _HomeState extends State<Home> {
               child: Text("Cancel"),
             ),
             ElevatedButton(
-                onPressed: () {
-                  addTaskofFirebase();
+                onPressed: () async {
+                 await addTaskofFirebase();
+                  Navigator.pop(context);
                 },
                 child: Text("Save"))
           ],
@@ -118,6 +124,11 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text("TODO"),
+        actions: [
+          IconButton(onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+          }, icon: Icon(Icons.logout_sharp))
+        ],
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -149,42 +160,63 @@ class _HomeState extends State<Home> {
                 final docs = snapshots.data?.docs;
                 return ListView.builder(
                   itemBuilder: (context, index) {
+                    var time = (docs![index]['timestamp'] as Timestamp).toDate();
                     return Padding(
                       padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 10, top: 10),
-                        height: 90,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            color: Color(0xff563C5C),
-                            borderRadius: BorderRadius.circular(10.0)),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 10.0),
-                                  child: Text(
-                                    docs![index]['title'],
-                                    style: GoogleFonts.roboto(fontSize: 18),
+                      child: InkWell(
+                        onTap: (){Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Description(
+                                title: docs[index]['title'],
+                                description: docs[index]['description'],
+                              ),));},
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: 10, top: 10),
+                          height: 90,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              color: Color(0xff563C5C),
+                              borderRadius: BorderRadius.circular(10.0)),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // snapshots.data.docs.map(( DocumentSnapshot document){
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10.0),
+                                    child: Text(
+                                      docs![index]['title'],
+                                      style: GoogleFonts.roboto(fontSize: 18),
+                                    ),
                                   ),
-                                ),
-                                IconButton(
-                                    onPressed: () async {
-                                      await FirebaseFirestore.instance
-                                          .collection('tasks')
-                                          .doc(uid)
-                                          .collection('mytasks')
-                                          .doc(docs[index]['time'])
-                                          .delete();
-                                    },
-                                    icon: Icon(Icons.delete_outline_rounded))
-                              ],
-                            )
-                          ],
+                                  IconButton(
+                                      onPressed: () async {
+                                        try {
+                                          await FirebaseFirestore.instance
+                                              .collection('tasks')
+                                              .doc(uid)
+                                              .collection('mytasks')
+                                              .doc(docs[index]['time'])
+                                              .delete();
+                                        } catch (e) {
+                                          print(e);
+                                        }
+                                      },
+                                      icon: Icon(Icons.delete_outline_rounded))
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Text(DateFormat.yMd().add_jm().format(time)),
+                              ),
+
+                            ],
+                          ),
                         ),
                       ),
                     );
